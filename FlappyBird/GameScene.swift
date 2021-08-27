@@ -22,7 +22,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
     let wallCategory: UInt32 = 1 << 2       // 0...00100
     let scoreCategory: UInt32 = 1 << 3      // 0...01000
     let itemCategory: UInt32 = 1 << 4       // 0...10000
-    let appleCategory: UInt32 = 1 << 5      // 0..100000
 
     // スコア用
     var score = 0
@@ -67,9 +66,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
             audioGetNode.run(playAction)
 
             itemScoreLabelNode.text = "ItemScore:\(itemScore)"
+
             // アイテムを消去
             // contact.bodyA.node?.isHidden = true // isHiddenでは当たり判定は残る
-            contact.bodyA.node?.removeFromParent()
+            // 衝突したノードの名前を取得して、鳥ではない方がアイテムだと断定できる
+
+            if contact.bodyA.node?.name == "bird_a" || contact.bodyA.node?.name == "bird_b" {
+                contact.bodyB.node?.removeFromParent()
+            } else {
+                contact.bodyA.node?.removeFromParent()
+            }
             
             // ベストスコア更新か確認する
             var itemBestScore = userDefaults.integer(forKey: "ItemBEST")
@@ -195,7 +201,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
 
         bird.position = CGPoint(x: self.frame.size.width * 0.2, y:self.frame.size.height * 0.7)
         bird.physicsBody?.velocity = CGVector.zero
-        bird.physicsBody?.collisionBitMask = groundCategory | wallCategory | appleCategory
+        bird.physicsBody?.collisionBitMask = groundCategory | wallCategory
         bird.zRotation = 0
 
         wallNode.removeAllChildren()
@@ -227,7 +233,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate /* 追加 */ {
 
         // 衝突のカテゴリー設定
         bird.physicsBody?.categoryBitMask = birdCategory    // ←追加
-        bird.physicsBody?.collisionBitMask = groundCategory | wallCategory | appleCategory  // ←追加
+        bird.physicsBody?.collisionBitMask = groundCategory | wallCategory
         bird.physicsBody?.contactTestBitMask = groundCategory | wallCategory | itemCategory // ←追加
 
 
